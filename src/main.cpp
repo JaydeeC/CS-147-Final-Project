@@ -108,9 +108,64 @@ Square Squares[numSquares];
 
 // [{"r": 0, "g": 0, "b": 0}, {"r": 36, "g": 0, "b": 18}, {"r": 72, "g": 0, "b": 36}, {"r": 109, "g": 0, "b": 54}, {"r": 145, "g": 0, "b": 72}, {"r": 182, "g": 0, "b": 91}, {"r": 218, "g": 0, "b": 109}, {"r": 255, "g": 0, "b": 127}, {"r": 0, "g": 36, "b": 18}, {"r": 36, "g": 36, "b": 36}, {"r": 72, "g": 36, "b": 54}, {"r": 109, "g": 36, "b": 72}, {"r": 145, "g": 36, "b": 91}, {"r": 182, "g": 36, "b": 109}, {"r": 218, "g": 36, "b": 127}, {"r": 255, "g": 36, "b": 145}, {"r": 0, "g": 72, "b": 36}, {"r": 36, "g": 72, "b": 54}, {"r": 72, "g": 72, "b": 72}, {"r": 109, "g": 72, "b": 91}, {"r": 145, "g": 72, "b": 109}, {"r": 182, "g": 72, "b": 127}, {"r": 218, "g": 72, "b": 145}, {"r": 255, "g": 72, "b": 163}, {"r": 0, "g": 109, "b": 54}, {"r": 36, "g": 109, "b": 72}, {"r": 72, "g": 109, "b": 91}, {"r": 109, "g": 109, "b": 109}, {"r": 145, "g": 109, "b": 127}, {"r": 182, "g": 109, "b": 145}, {"r": 218, "g": 109, "b": 163}, {"r": 255, "g": 109, "b": 182}, {"r": 0, "g": 145, "b": 72}, {"r": 36, "g": 145, "b": 91}, {"r": 72, "g": 145, "b": 109}, {"r": 109, "g": 145, "b": 127}, {"r": 145, "g": 145, "b": 145}, {"r": 182, "g": 145, "b": 163}, {"r": 218, "g": 145, "b": 182}, {"r": 255, "g": 145, "b": 200}, {"r": 0, "g": 182, "b": 91}, {"r": 36, "g": 182, "b": 109}, {"r": 72, "g": 182, "b": 127}, {"r": 109, "g": 182, "b": 145}, {"r": 145, "g": 182, "b": 163}, {"r": 182, "g": 182, "b": 182}, {"r": 218, "g": 182, "b": 200}, {"r": 255, "g": 182, "b": 218}, {"r": 0, "g": 218, "b": 109}, {"r": 36, "g": 218, "b": 127}, {"r": 72, "g": 218, "b": 145}, {"r": 109, "g": 218, "b": 163}, {"r": 145, "g": 218, "b": 182}, {"r": 182, "g": 218, "b": 200}, {"r": 218, "g": 218, "b": 218}, {"r": 255, "g": 218, "b": 236}, {"r": 0, "g": 255, "b": 127}, {"r": 36, "g": 255, "b": 145}, {"r": 72, "g": 255, "b": 163}, {"r": 109, "g": 255, "b": 182}, {"r": 145, "g": 255, "b": 200}, {"r": 182, "g": 255, "b": 218}, {"r": 218, "g": 255, "b": 236}, {"r": 255, "g": 255, "b": 255}];
 
+class Button{
+  public:
+    Button(int pin) : pin(pin){};
+
+    void begin(){
+      pinMode(pin, INPUT_PULLUP);
+    }
+
+    bool pressed(){
+
+      bool reading = digitalRead(pin);
+
+      if(reading != lastReading){
+        lastChange = millis();
+      }
+
+      if(millis() - lastChange > 30){
+
+        if (reading != state){
+          state = reading;
+
+          if(state == LOW){
+          return true;
+          }
+        }
+      }
+
+      lastReading = reading;
+      return false;
+    }
+
+  private:
+    int pin;
+    bool state = HIGH;
+    bool lastReading = HIGH;
+    uint32_t lastChange = 0;
+};
+
+
+bool GRN_ST = HIGH;
+bool YLW_ST = HIGH;
+uint32_t grnlastChangeTime = 0;
+uint32_t ylwlastChangeTime = 0;
+
+Button grn_btn(YLW_BTN);
+Button ylw_btn(GRN_BTN);
+
+void requestNewImage(){
+
+}
+
 void setup()
 {
   // put your setup code here, to run once:
+
+  grn_btn.begin();
+  ylw_btn.begin();
+
   pinMode(RESIST, INPUT);
   delay(1000);
   Serial.begin(9600);
@@ -153,6 +208,12 @@ int count = 0;
 int brightness = 0;
 void loop()
 {
+  if(ylw_btn.pressed()){
+    //reset screen to black
+  }
+  if(grn_btn.pressed()){
+    requestNewImage();
+  }
   float sensor = analogRead(RESIST);
 
   static float sensorSmooth = 0;
