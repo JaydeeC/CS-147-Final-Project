@@ -1,0 +1,44 @@
+body {
+  background: #181818;
+  color: white;
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+h1 { text-align: center; }
+
+.container {
+  display: flex;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+.left, .right {
+  padding: 20px;
+  background: #222;
+  border-radius: 10px;
+}
+
+#canvas {
+  background: #000;
+  border: 2px solid #444;
+  cursor: crosshair;
+}
+
+.tools { margin-top: 15px; }
+
+.tools button {
+  margin-right: 10px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  background: #333;
+  color: white;
+  cursor: pointer;
+}
+
+#status {
+  margin-top: 10px;
+  color: #4caf50;
+  font-size: 0.9rem;
+}
