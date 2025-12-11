@@ -84,6 +84,9 @@ struct Pixel{
 #define YLW_BTN 32
 #define GRN_BTN 35
 
+#define WIDTH 64
+#define HEIGHT 32
+
 MatrixPanel_I2S_DMA *display = nullptr;
 
 constexpr std::size_t color_num = 5;
@@ -168,9 +171,21 @@ void requestNewImage(){
   }
 }
 
-// void drawImage(){
-
-// }
+void drawImage(int rgb[2048][3], MatrixPanel_I2S_DMA &display){
+  int y = 0;
+  int colCount = 0;
+  for(int i = 0; i < 2048; i++){
+    int RED = rgb[i][0];
+    int GRN = rgb[i][1];
+    int BLU = rgb[i][2];
+    display.drawPixel(colCount, y, display.color565(RED, GRN, BLU));
+    colCount++;
+    if(colCount == WIDTH){
+      y++;
+      colCount = 0;
+    }
+  }
+}
 
 void setup()
 {
