@@ -34,12 +34,11 @@
 #include <string>
 #include <map>
 
-ArduinoJson::JsonDocument doc;
 
  #define WIFI_SSID "GET YOUR OWN"
 #define WIFI_PASSWORD "linden2003"
-
-#define SAS_TOKEN "SharedAccessSignature sr=cs147group69iothub.azure-devices.net%2Fdevices%2F147esp32group69&sig=VbWA9jEaUjlYbULr2N%2FbT4E1RzJzUu5FEMJlmxHZV7c%3D&se=60001764798811"
+ //SharedAccessSignature sr=cs147group69iothub.azure-devices.net%2Fdevices%2F147esp32group69&sig=VbWA9jEaUjlYbULr2N%2FbT4E1RzJzUu5FEMJlmxHZV7c%3D&se=60001764798811
+#define SAS_TOKEN "sp=r&st=2025-12-10T22:46:44Z&se=2025-12-14T07:01:44Z&sv=2024-11-04&sr=c&sig=56%2FJ3nu%2B7YQEreXDvBBb40RB2oxExEbRduh%2FE7B1Uhc%3D"
 String iothubName = "cs147group69iothub";
 String deviceName = "147esp32group69";
 String  url = "GET YOUR OWN"+ iothubName + ".azure-devices.net/devices/" + 
@@ -81,7 +80,7 @@ struct Pixel{
   int b;
 };
 
-#define RESIST 2
+#define RESIST 33
 #define YLW_BTN 32
 #define GRN_BTN 35
 
@@ -146,34 +145,60 @@ class Button{
     uint32_t lastChange = 0;
 };
 
-
-bool GRN_ST = HIGH;
-bool YLW_ST = HIGH;
-uint32_t grnlastChangeTime = 0;
-uint32_t ylwlastChangeTime = 0;
-
 Button grn_btn(YLW_BTN);
 Button ylw_btn(GRN_BTN);
 
 void requestNewImage(){
+  WiFiClientSecure client;
+  client.setCACert(root_ca);
+  HTTPClient http;
+  //https://cs147group69iothub.azure-devices.net/devices/147esp32group69/messages/events?api-version=2021-04-12
+  http.begin(client, "https://cs147gropu69finalproject.blob.core.windows.net/drawings?sp=r&st=2025-12-10T22:46:44Z&se=2025-12-14T07:01:44Z&sv=2024-11-04&sr=c&sig=56%2FJ3nu%2B7YQEreXDvBBb40RB2oxExEbRduh%2FE7B1Uhc%3D");
+  http.addHeader("Content-Type","application/json");
+  http.addHeader("Authorization",SAS_TOKEN);
+  int httpCode = http.GET();
+  Serial.println(httpCode);
 
+  if(httpCode == 200){ //200 is a success
+    String payload = http.getString();
+    Serial.print(payload);
+    ArduinoJson::JsonDocument doc;
+    deserializeJson(doc, payload);
+    //drawImage();
+  }
 }
+
+// void drawImage(){
+
+// }
 
 void setup()
 {
+  Serial.begin(9600);
   // put your setup code here, to run once:
+  Serial.println("Beginning setup...");
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
-  grn_btn.begin();
-  ylw_btn.begin();
+  while(WiFi.status() != WL_CONNECTED){
+    delay(500);
+    Serial.print(".");
+    Serial.print(WiFi.status());
+  }
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  Serial.println("MAC address: ");
+  Serial.println(WiFi.macAddress());
+
 
   pinMode(RESIST, INPUT);
   delay(1000);
-  Serial.begin(9600);
   delay(200);
   pinMode(YLW_BTN, INPUT_PULLUP);
   pinMode(GRN_BTN, INPUT_PULLUP);
 
-  Serial.println("...Starting Display");
   HUB75_I2S_CFG mxconfig;
   mxconfig.double_buff = true; // <------------- Turn on double buffer
   //mxconfig.clkphase = false; // <------------- Turn off double buffer and it'll look flickery
@@ -202,17 +227,19 @@ void setup()
     int random_num = random(6);
     Squares[i].colour = colours[random_num];
   }
+
+  Serial.println("Finished Setup!");
 }
 int bright = 10;
 int count = 0;
 int brightness = 0;
 void loop()
 {
-  if(ylw_btn.pressed()){
+  if(digitalRead(YLW_BTN) == LOW){
     //reset screen to black
-  }
-  if(grn_btn.pressed()){
+    Serial.println("yellow button pressed!");
     requestNewImage();
+    delay(1000);
   }
   float sensor = analogRead(RESIST);
 
@@ -220,11 +247,9 @@ void loop()
   sensorSmooth = sensorSmooth * 0.90 + sensor * 0.10;
 
   int brightness8 = (int)(sensorSmooth * 255.0 / 2000.0);
-  Serial.print("Brightness: ");
   if(brightness8 < 5){
     brightness8 = 5;
   }
-  Serial.println(brightness8);
   display->setBrightness8(brightness8);
 
   
