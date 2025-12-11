@@ -18,7 +18,7 @@
 #define SAS_TOKEN "sp=r&st=2025-12-10T22:46:44Z&se=2025-12-14T07:01:44Z&sv=2024-11-04&sr=c&sig=56%2FJ3nu%2B7YQEreXDvBBb40RB2oxExEbRduh%2FE7B1Uhc%3D"
 String iothubName = "cs147group69iothub";
 String deviceName = "147esp32group69";
-String  url = "GET YOUR OWN"+ iothubName + ".azure-devices.net/devices/" + 
+String url = "https://" + iothubName + ".azure-devices.net/devices/" + 
 deviceName + "/messages/events?api-version=2021-04-12";
 
 struct Pixel{
